@@ -25,7 +25,7 @@ char	*ft_strchr(const char *s, int c);
 int		ft_strlen(const char *str);
 
 # ifndef BUFFER_SIZE
-#  define BUFFER_SIZE 5
+#  define BUFFER_SIZE 10
 # endif
 
 # ifndef FD_NUMBER

@@ -6,84 +6,109 @@
 /*   By: arybarsk <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/05 22:01:49 by arybarsk          #+#    #+#             */
-/*   Updated: 2023/10/06 22:14:00 by arybarsk         ###   ########.fr       */
+/*   Updated: 2023/10/07 21:23:40 by arybarsk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-char    *read_to_keeper(int fd, char **state_keeper, ssize_t *bytes_read)
+unsigned int	ft_strlcpy(char *dest, char *src, unsigned int size)
 {
-    char    *buffer;
-    char    *temp;
+	unsigned int	i;
+	unsigned int	length;
 
-    if (!*state_keeper)
-        return (NULL);
-    buffer = NULL;
-    buffer = (char *)malloc(sizeof(char) * (BUFFER_SIZE + 1));
-    if (!buffer)
-        return (NULL);
-    while (!ft_strchr(*state_keeper, '\n') && *bytes_read != 0)
-    {
-        *bytes_read = read(fd, buffer, BUFFER_SIZE);
-        if (*bytes_read < 0)
-        {
-            free(buffer);
-            return (NULL);
-        }
-        buffer[*bytes_read] = '\0';
-        temp = ft_strjoin(*state_keeper, buffer);
-        free(*state_keeper);
-        *state_keeper = temp;
-    }
-    free(buffer);
-    return (*state_keeper);
+	i = 0;
+	length = ft_strlen(src);
+	if (size != 0)
+	{
+		while (src[i] != '\0' && i < size - 1)
+		{
+			dest[i] = src[i];
+			i++;
+		}
+		dest[i] = '\0';
+	}
+	return (length);
 }
 
-void	cut_line(char **line, char **state_keeper)
+ssize_t	read_to_keeper(int fd, char **state_keeper)
+{
+	char	*buffer;
+	char	*temp;
+	ssize_t	readout;
+
+	if (!*state_keeper)
+		return (0);
+	buffer = NULL;
+	buffer = (char *)malloc(sizeof(char) * (BUFFER_SIZE + 1));
+	if (!buffer)
+		return (0);
+	readout = 1;
+	while (!ft_strchr(*state_keeper, '\n') && readout != 0)
+	{
+		readout = read(fd, buffer, BUFFER_SIZE);
+		if (readout < 0)
+		{
+			free(buffer);
+			return (0);
+		}
+		buffer[readout] = '\0';
+		temp = ft_strjoin(*state_keeper, buffer);
+		free(*state_keeper);
+		*state_keeper = temp;
+	}
+	free(buffer);
+	return (readout);
+}
+
+void	cut_line_from_keeper(char **line, char **state_keeper)
 {
 	char	*found_newline;
-	int		rest_of_line;
+	int		line_len;
+	int		rest_of_keeper;
 
-	found_newline = NULL;
-	found_newline = ft_strchr(*line, '\n');
+	if (!*state_keeper || ft_strlen(*state_keeper) < 1)
+		return ;
+	found_newline = ft_strchr(*state_keeper, '\n');
 	if (found_newline)
 	{
-		rest_of_line = ft_strlen(found_newline + 1);
-		ft_memmove(*state_keeper, found_newline + 1, rest_of_line + 1);
-		if(!*state_keeper)
-			return ;
-		found_newline[1] = '\0';
+		rest_of_keeper = ft_strlen(found_newline + 1);
+		line_len = ft_strlen(*state_keeper) - rest_of_keeper;
+		*line = (char *)malloc(sizeof(char) * (line_len + 1));
+		ft_strlcpy(*line, *state_keeper, line_len + 1);
+		ft_memmove(*state_keeper, found_newline + 1, rest_of_keeper + 1);
 	}
 	else
-		*line[0] = '\0';
+	{
+		line_len = ft_strlen(*state_keeper);
+		*line = (char *)malloc(sizeof(char) * (line_len + 1));
+		ft_strlcpy(*line, *state_keeper, line_len + 1);
+		free(*state_keeper);
+		*state_keeper = ft_strdup("");
+		if (!*state_keeper)
+			return ;
+	}
 }
 
-char    *get_next_line(int fd)
+char	*get_next_line(int fd)
 {
-    static char *state_keeper;
-    char        *line;
-    ssize_t     bytes_read;
+	static char	*state_keeper;
+	char		*line;
 
-    line = NULL;
-    bytes_read = 1;
-    if (fd < -1 || BUFFER_SIZE <= 0)
-        return (NULL);
-    if (!state_keeper)
-        state_keeper = ft_strdup("");
-    read_to_keeper(fd, &state_keeper, &bytes_read);
-    if (!state_keeper)
-        return (NULL);
-    line = ft_strdup(state_keeper);
-    if (!line)
-        return (NULL);
-    cut_line(&line, &state_keeper);
-    if (bytes_read <= 0)
-    {
-        free(line);
-        return (NULL);
-    }
-    return (line);
+	line = NULL;
+	if (fd < -1 || BUFFER_SIZE <= 0)
+		return (NULL);
+	if (!state_keeper)
+	{
+		state_keeper = ft_strdup("");
+		if (!state_keeper)
+			return (NULL);
+	}
+	read_to_keeper(fd, &state_keeper);
+	if (ft_strlen(state_keeper) < 1)
+		return (NULL);
+	cut_line_from_keeper(&line, &state_keeper);
+	return (line);
 }
 /*
 int	main(void)
