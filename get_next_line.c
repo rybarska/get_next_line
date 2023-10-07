@@ -1,4 +1,4 @@
-/*i ************************************************************************** */
+/* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
 /*   get_next_line.c                                    :+:      :+:    :+:   */
@@ -6,7 +6,7 @@
 /*   By: arybarsk <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/05 22:01:49 by arybarsk          #+#    #+#             */
-/*   Updated: 2023/10/07 21:23:40 by arybarsk         ###   ########.fr       */
+/*   Updated: 2023/10/07 21:35:22 by arybarsk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,8 +37,6 @@ ssize_t	read_to_keeper(int fd, char **state_keeper)
 	char	*temp;
 	ssize_t	readout;
 
-	if (!*state_keeper)
-		return (0);
 	buffer = NULL;
 	buffer = (char *)malloc(sizeof(char) * (BUFFER_SIZE + 1));
 	if (!buffer)
