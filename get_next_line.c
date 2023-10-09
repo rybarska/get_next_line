@@ -6,7 +6,7 @@
 /*   By: arybarsk <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/05 22:01:49 by arybarsk          #+#    #+#             */
-/*   Updated: 2023/10/07 21:35:22 by arybarsk         ###   ########.fr       */
+/*   Updated: 2023/10/09 21:58:27 by arybarsk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,64 +37,63 @@ ssize_t	read_to_keeper(int fd, char **state_keeper)
 	char	*temp;
 	ssize_t	readout;
 
-	buffer = NULL;
 	buffer = (char *)malloc(sizeof(char) * (BUFFER_SIZE + 1));
 	if (!buffer)
-		return (0);
-	readout = 1;
-	while (!ft_strchr(*state_keeper, '\n') && readout != 0)
+		return (-1);
+	readout = 0;
+	while (!ft_strchr(*state_keeper, '\n'))
 	{
 		readout = read(fd, buffer, BUFFER_SIZE);
-		if (readout < 0)
-		{
-			free(buffer);
-			return (0);
-		}
+		if (readout <= 0)
+			break ;
 		buffer[readout] = '\0';
 		temp = ft_strjoin(*state_keeper, buffer);
+		printf("temp: %s\n", temp);
 		free(*state_keeper);
 		*state_keeper = temp;
 	}
 	free(buffer);
+	printf("readout: %zd\n", readout);
 	return (readout);
 }
 
-void	cut_line_from_keeper(char **line, char **state_keeper)
+char	*cut_line_from_keeper(char **state_keeper)
 {
+	char	*line;
 	char	*found_newline;
 	int		line_len;
 	int		rest_of_keeper;
 
 	if (!*state_keeper || ft_strlen(*state_keeper) < 1)
-		return ;
+		return (NULL);
 	found_newline = ft_strchr(*state_keeper, '\n');
 	if (found_newline)
 	{
 		rest_of_keeper = ft_strlen(found_newline + 1);
 		line_len = ft_strlen(*state_keeper) - rest_of_keeper;
-		*line = (char *)malloc(sizeof(char) * (line_len + 1));
-		ft_strlcpy(*line, *state_keeper, line_len + 1);
+		line = (char *)malloc(sizeof(char) * (line_len + 1));
+		if (!line)
+			return (NULL);
+		ft_strlcpy(line, *state_keeper, line_len + 1);
 		ft_memmove(*state_keeper, found_newline + 1, rest_of_keeper + 1);
 	}
 	else
 	{
-		line_len = ft_strlen(*state_keeper);
-		*line = (char *)malloc(sizeof(char) * (line_len + 1));
-		ft_strlcpy(*line, *state_keeper, line_len + 1);
-		free(*state_keeper);
-		*state_keeper = ft_strdup("");
-		if (!*state_keeper)
-			return ;
+		line = ft_strdup(*state_keeper);
+		if (!line)
+			return (NULL);
 	}
+	return (line);
 }
 
 char	*get_next_line(int fd)
 {
 	static char	*state_keeper;
+	ssize_t		result;
 	char		*line;
 
 	line = NULL;
-	if (fd < -1 || BUFFER_SIZE <= 0)
+	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
 	if (!state_keeper)
 	{
@@ -102,35 +101,39 @@ char	*get_next_line(int fd)
 		if (!state_keeper)
 			return (NULL);
 	}
-	read_to_keeper(fd, &state_keeper);
-	if (ft_strlen(state_keeper) < 1)
-		return (NULL);
-	cut_line_from_keeper(&line, &state_keeper);
+	result = read_to_keeper(fd, &state_keeper);
+	if (result < 0)
+		return (free(state_keeper), state_keeper = NULL, NULL);
+	line = cut_line_from_keeper(&state_keeper);
+	if (!(ft_strchr(line, '\n')))
+	{
+		free(state_keeper);
+		state_keeper = NULL;
+	}
 	return (line);
 }
 /*
-int	main(void)
+int main()
 {
-    int fd;
-    char *line;
-
-    fd = open("text1.txt", O_RDONLY);
+    int fd = open("text5.txt", O_RDONLY);
     if (fd == -1)
     {
         perror("Error opening file");
         return 1;
     }
-	while ((line = get_next_line(fd)) != NULL)
+
+    char *line;
+    while ((line = get_next_line(fd)) != NULL)
     {
-        printf("%s", line);
+        printf("main: %s\n", line);
         free(line);
     }
+
     if (line == NULL)
     {
         perror("Program");
-        close(fd);
-        return 1;
     }
+
     close(fd);
     return 0;
 }*/
