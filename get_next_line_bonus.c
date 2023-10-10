@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*   get_next_line_bonus.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: arybarsk <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/05 22:01:49 by arybarsk          #+#    #+#             */
-/*   Updated: 2023/10/10 13:52:30 by arybarsk         ###   ########.fr       */
+/*   Updated: 2023/10/10 13:16:04 by arybarsk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.h"
+#include "get_next_line_bonus.h"
 
 unsigned int	ft_strlcpy(char *dest, char *src, unsigned int size)
 {
